@@ -10,6 +10,8 @@ var cookiesParser = require('cookie-parser');
 var hb = require('express-handlebars');
 var queryDB = require('./queryDB');
 
+
+
 app.engine('handlebars', hb());
 app.set('view engine', 'handlebars');
 
@@ -19,9 +21,6 @@ app.use(bodyParser.urlencoded({
 app.use(cookiesParser());
 
 app.use(staticProjects);
-app.get('/', function(req, res) {
-    res.send('<!doctype html><title>Hello World!</title><p>Hello World!</html>');
-});
 
 app.post('/filter', function(req, res) {
   queryDB.filterTable(req.body.city, req.body.color, req.body.age).then(function(val){
@@ -35,16 +34,24 @@ app.post('/filter', function(req, res) {
 });
 
 app.get('/rendered', function(req,res) {
-    queryDB.joinTables().then(function(val) {
+      queryDB.joinTables().then(function(val) {
+
         city = val.map(function(record){return record.city}).filter(function(item, index, array){return array.indexOf(item) === index});
+        console.log('hello')
         color = val.map(function(record){return record.color}).filter(function(item, index, array){return array.indexOf(item) === index});
         age = val.map(function(record){return record.age}).filter(function(item, index, array){return array.indexOf(item) === index});
+        console.log(city)
         res.render('hello', {
           data: val,
           city: city,
-          color: color,
+          color: city,
           age: age
+        },function(err, results){
+          console.log("hello")
+          res.send(results)
         });
+    }).catch(function(err){
+      console.log(err)
     });
 });
 
@@ -68,6 +75,7 @@ app.post('/name', function(req, res) {
 
 app.post('/userProfile', function(req, res){
   var body = req.body;
+
    queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.cookies.id).then(function(val) {
     res.redirect('/rendered')
   });
@@ -79,8 +87,8 @@ app.get('/helloWorld', function(req, res){
   res.send('<!doctype html><title>Hello World!</title><p>Hello World!</html>');
 });
 
-app.get('/', function(req,res){
-  res.file('/index.html');
+app.get('/', function(req,res) {
+  res.write('hello world');
   res.end();
 });
 

@@ -1,6 +1,10 @@
 var pg = require('pg');
 var str = 'postgres://test:' + require('./password.json').test + '@localhost:5432/users';
-
+var redis = require('redis')
+var clientRE = redis.createClient({
+  host: 'localhost',
+  port: 6379
+});
 function filterTable(city, color, age) {
   var client = new pg.Client(str);
   client.connect();
@@ -23,12 +27,14 @@ function filterTable(city, color, age) {
      arr.push(city);
      count ++;
    }
+
    if (color) {
      if(count === 2) query += ' and ';
      query += 'color = $' + count + '';
      arr.push(color);
      count++;
    }
+
    if (age) {
      if(count === 2 || count === 3) query += ' and '
      query += 'age = $' + count + '';
@@ -59,7 +65,6 @@ function makeUserProfileTable(age,city,url,color,id){
   var query = 'INSERT INTO user_profiles (age,city,url,color,id) VALUES ($1, $2, $3, $4, $5) returning *;'
 
   return new Promise(function(resolve, reject){
-
     client.query(query,[age,city,url, color,id], function(err, results) {
       console.log(results)
       resolve(results)
@@ -88,7 +93,7 @@ function sendQuery(name, lastName){
   });
 }
 
-function joinTables(name, lastName){
+function joinTables(){
   var client = new pg.Client(str);
   client.connect();
   client.on('error', function(err){
@@ -99,10 +104,33 @@ function joinTables(name, lastName){
   });
   return new Promise(function(resolve, reject) {
     var query = "select * from user_names JOIN user_profiles ON user_names.id=user_profiles.id;";
-      client.query(query,[], function(err, results) {
-        resolve(results.rows);
-        client.end();
-    });
+    clientRE.get('joinedTables', function(err, data) {
+        if (err) {
+            return console.log(err);
+        }
+        if(data) {
+          console.log('get')
+          console.log(data)
+          resolve(JSON.parse(data));
+        } else {
+          console.log('set')
+          client.query(query,[], function(err, results) {
+            if (err) {
+              console.log(err)
+            }
+          clientRE.setex('joinedTables', 60, JSON.stringify(results.rows), function(err, data) {
+              if (err) {
+                  return console.log(err);
+              }
+              console.log('the "city" key was successfully set');
+              });
+          resolve(results.rows);
+          client.end();
+          });
+        }
+    })
+  }).catch(function(err){
+    console.log(err)
   });
 }
 
