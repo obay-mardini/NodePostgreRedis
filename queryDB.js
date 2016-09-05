@@ -75,6 +75,7 @@ function makeUserProfileTable(age,city,url,color,id){
 }
 
 function sendQuery(name, lastName){
+  clientRE.del('joinedTables')
   var client = new pg.Client(str);
   client.connect();
   client.on('error', function(err){
@@ -118,7 +119,7 @@ function joinTables(){
             if (err) {
               console.log(err)
             }
-          clientRE.setex('joinedTables', 60, JSON.stringify(results.rows), function(err, data) {
+          clientRE.setex('joinedTables', 600000, JSON.stringify(results.rows), function(err, data) {
               if (err) {
                   return console.log(err);
               }
