@@ -19,4 +19,4 @@
   * check Redis to see if you have the rows cached. If you don't have them in the cache you should do the query and then store the rows in Redis.
   * Modify your Twitter API project so that you get the tweets from cache if possible. If they are not in the cache, you should request them from Twitter and cache them for 10 minutes after you get them.
 
-<img src='ticker.git'>
+<img src='ticker.gif'>

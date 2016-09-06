@@ -1,13 +1,16 @@
 {
-  "name": "redis",
+  "name": "expresshandlebars",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {},
-  "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "express-handlebars": "^3.0.0",
+    "pg": "^6.1.0",
+    "redis": "^2.6.2"
+  }
 }
