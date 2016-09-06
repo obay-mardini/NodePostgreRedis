@@ -1,4 +1,4 @@
-# Node + PostgreSQL + Redis
+# User Registration System
 
 #Technologies:
   * Javascript
@@ -8,7 +8,9 @@
   * HTML
   * CSS
   * Jquery
+  * Express
   * Session-express
+  * handlebars
 
 # Tasks:
   * create a server and listen on port 8080
