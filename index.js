@@ -6,7 +6,7 @@ var staticProjects = express.static(__dirname + '/projects');
 var pg = require('pg');
 var str = 'postgres://test:12345@localhost:5432/users';
 var bodyParser = require('body-parser');
-var cookiesParser = require('cookie-parser');
+//var cookiesParser = require('cookie-parser');
 var hb = require('express-handlebars');
 var queryDB = require('./queryDB');
 var redis = require('redis')
@@ -14,6 +14,19 @@ var clientRE = redis.createClient({
   host: 'localhost',
   port: 6379
 });
+var session = require('express-session');
+var Store = require('connect-redis')(session);
+
+app.use(session({
+    store: new Store({
+        ttl: 3600,
+        host: 'localhost',
+        port: 6379
+    }),
+    resave: false,
+    saveUninitialized: true,
+    secret: 'my super fun secret'
+}));
 
 app.engine('handlebars', hb());
 
@@ -23,7 +36,7 @@ app.use(bodyParser.urlencoded({
   extended: false
 }));
 
-app.use(cookiesParser());
+//app.use(cookiesParser());
 
 app.use(staticProjects);
 
@@ -40,7 +53,6 @@ app.post('/filter', function(req, res) {
 
 app.get('/rendered', function(req,res) {
       queryDB.joinTables().then(function(val) {
-
         color = val.map(function(record){
           return record.color;
         }).filter(function(item, index, array){
@@ -75,10 +87,17 @@ app.post('/name', function(req, res) {
   if(!body.firstname){
     res.redirect('/name.html')
   }else {
+    /*
     res.cookie('name', body.firstname);
     res.cookie('lastName', body.lastname);
+    */
     queryDB.sendQuery(body.firstname, body.lastname).then(function(val) {
-      res.cookie('id',val);
+      req.session.user = {
+        firstName: body.firstname,
+        lastName: body.lastname,
+        id: val
+      }
+
       res.redirect('/newForm.html');
     }).catch(function(err) {
       res.sendStatus(500);
@@ -90,7 +109,7 @@ app.post('/name', function(req, res) {
 
 app.post('/userProfile', function(req, res){
   var body = req.body;
-   queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.cookies.id).then(function(val) {
+   queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.user.id).then(function(val) {
     res.redirect('/rendered')
   });
 
@@ -99,6 +118,12 @@ app.post('/userProfile', function(req, res){
 // recieve a request
 app.get('/helloWorld', function(req, res){
   res.send('<!doctype html><title>Hello World!</title><p>Hello World!</html>');
+});
+
+app.get('/logout', function(req, res){
+  req.session.destroy(function(){
+    res.redirect('/name.html');
+  });
 });
 
 app.get('/', function(req,res) {
