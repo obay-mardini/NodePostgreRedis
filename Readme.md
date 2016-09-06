@@ -8,6 +8,7 @@
   * HTML
   * CSS
   * Jquery
+  * Session-express
 
 # Tasks:
   * create a server and listen on port 8080
