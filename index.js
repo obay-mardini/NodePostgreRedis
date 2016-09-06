@@ -41,9 +41,24 @@ app.post('/filter', function(req, res) {
 app.get('/rendered', function(req,res) {
       queryDB.joinTables().then(function(val) {
 
-        color = val.map(function(record){return record.color}).filter(function(item, index, array){return array.indexOf(item) === index});
-        city = val.map(function(record){return record.city}).filter(function(item, index, array){return array.indexOf(item) === index});
-        age = val.map(function(record){return record.age}).filter(function(item, index, array){return array.indexOf(item) === index});
+        color = val.map(function(record){
+          return record.color;
+        }).filter(function(item, index, array){
+          return array.indexOf(item) === index;
+        });
+
+        city = val.map(function(record){
+          return record.city
+        }).filter(function(item, index, array){
+          return array.indexOf(item) === index;
+        });
+
+        age = val.map(function(record){
+          return record.age;
+        }).filter(function(item, index, array){
+          return array.indexOf(item) === index;
+        });
+
         res.render('hello', {
           data: val,
           city: city,
@@ -66,7 +81,7 @@ app.post('/name', function(req, res) {
       res.cookie('id',val);
       res.redirect('/newForm.html');
     }).catch(function(err) {
-      console.log(err);
+      res.sendStatus(500);
     });
     // will take care of the cookies later
     //console.log(req.cookies);
