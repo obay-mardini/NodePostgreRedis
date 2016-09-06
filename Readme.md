@@ -19,5 +19,8 @@
   * Filter the users displayed by city and favorite color.
   * check Redis to see if you have the rows cached. If you don't have them in the cache you should do the query and then store the rows in Redis.
   * Modify your Twitter API project so that you get the tweets from cache if possible. If they are not in the cache, you should request them from Twitter and cache them for 10 minutes after you get them.
+  * Use sessions to change the route that users POST their names to so that it no longer writes the names and ids to a cookie but     instead adds a user property to req.session. Also change the test that redirects users who have not entered their names to the page with the form. This test should now look for req.session.user.
+
+  * Add a /logout route that calls req.session.destroy and redirects users to the form for entering their names.
 
 <img src='ticker.gif'>
