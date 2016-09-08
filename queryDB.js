@@ -15,14 +15,18 @@ function signUp(firstName, lastName,password,email) {
     client.on('end', function(res){
         //console.log(res)
     })
-    var query = "INSERT INTO registeration (firstname, lastname, password,email) VALUES ($1, $2, $3, $4) returning *;";
-    client.query(query,[firstName, lastName, email, password], function(err, results) {
+    var query = "INSERT INTO registration (firstname, lastname, password,email) VALUES ($1, $2, $3, $4) returning *;";
+    return new Promise(function(resolve, reject){
+        client.query(query,[firstName, lastName, email, password], function(err, results) {
         if(err){
             console.log(err)
         }
-        console.log('done')
+        console.log(results)
+        resolve(results.rows[0].id)
         client.end();
+        })
     });
+
 }
 
 function filterTable(city, color, age) {
@@ -73,6 +77,7 @@ function filterTable(city, color, age) {
 }
 
 function makeUserProfileTable(age,city,url,color,id){
+    console.log(id)
     var client = new pg.Client(str);
     client.connect();
     client.on('error', function(err){
@@ -82,7 +87,7 @@ function makeUserProfileTable(age,city,url,color,id){
         //console.log(res)
     });
 
-    var query = 'INSERT INTO user_profiles (age,city,url,color,id) VALUES ($1, $2, $3, $4, $5) returning *;'
+    var query = 'INSERT INTO user_profiles (age,city,url,color,idreg) VALUES ($1, $2, $3, $4, $5) returning *;'
 
     return new Promise(function(resolve, reject){
         client.query(query,[age,city,url, color,id], function(err, results) {
@@ -151,7 +156,7 @@ function joinTables(){
         console.log(err)
     });
 }
-
+/*
 function constructUsersTable() {
     var client = new pg.Client(str);
     client.connect();
@@ -166,9 +171,9 @@ function constructUsersTable() {
         client.end();
     });
 }
-
+*/
 exports.filterTable = filterTable;
-exports.constructUsersTable = constructUsersTable;
+//exports.constructUsersTable = constructUsersTable;
 exports.joinTables = joinTables;
 exports.sendQuery = sendQuery;
 exports.makeUserProfileTable = makeUserProfileTable;
