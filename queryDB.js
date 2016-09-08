@@ -5,6 +5,26 @@ var clientRE = redis.createClient({
   host: 'localhost',
   port: 6379
 });
+
+function signUp(firstName, lastName,password,email) {
+  var client = new pg.Client(str);
+  client.connect();
+  client.on('error', function(err){
+    console.log(err)
+  });
+  client.on('end', function(res){
+    //console.log(res)
+  })
+  var query = "INSERT INTO registeration (firstname, lastname, password,email) VALUES ($1, $2, $3, $4) returning *;";
+    client.query(query,[firstName, lastName, email, password], function(err, results) {
+      if(err){
+        console.log(err)
+      }
+      console.log('done')
+      client.end();
+  });
+}
+
 function filterTable(city, color, age) {
   var client = new pg.Client(str);
   client.connect();
@@ -126,7 +146,7 @@ function joinTables(){
           client.end();
           });
         }
-    })
+    });
   }).catch(function(err){
     console.log(err)
   });
@@ -152,3 +172,4 @@ exports.constructUsersTable = constructUsersTable;
 exports.joinTables = joinTables;
 exports.sendQuery = sendQuery;
 exports.makeUserProfileTable = makeUserProfileTable;
+exports.signUp = signUp;

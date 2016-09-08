@@ -9,13 +9,14 @@ var bodyParser = require('body-parser');
 //var cookiesParser = require('cookie-parser');
 var hb = require('express-handlebars');
 var queryDB = require('./queryDB');
-var redis = require('redis')
+var redis = require('redis');
 var clientRE = redis.createClient({
   host: 'localhost',
   port: 6379
 });
 var session = require('express-session');
 var Store = require('connect-redis')(session);
+var crypt = require('./crypting.js');
 
 app.use(session({
     store: new Store({
@@ -107,6 +108,21 @@ app.post('/name', function(req, res) {
   }
 });
 
+app.post('/registrationForm', function(req, res) {
+  console.log('here')
+  var body = req.body;
+  if(!body.firstname || !body.password || !body.lastname || !body.email){
+    res.redirect('/name.html')
+  }else {
+    queryDB.signUp(body.firstname,body.lastname, body.email, body.password);
+      req.session.user = {
+        firstName: body.firstname,
+        lastName: body.lastname,
+        password: body.password
+      }
+  }
+});
+
 app.post('/userProfile', function(req, res){
   var body = req.body;
    queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.user.id).then(function(val) {
@@ -121,8 +137,8 @@ app.get('/helloWorld', function(req, res){
 });
 
 app.get('/logout', function(req, res){
-  req.session.destroy(function(){
-    res.redirect('/name.html');
+  req.session.destroy(function(err){
+    res.redirect('/rendered');
   });
 });
 
