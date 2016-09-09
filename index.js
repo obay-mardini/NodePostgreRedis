@@ -14,6 +14,10 @@ var clientRE = redis.createClient({
   host: 'localhost',
   port: 6379
 });
+var hb = require('express-handlebars');
+app.engine('handlebars', hb());
+app.set('view engine', 'handlebars');
+
 var session = require('express-session');
 var Store = require('connect-redis')(session);
 var crypt = require('./crypting.js');
@@ -106,6 +110,17 @@ app.post('/logInForm', function(req, res) {
         }
     });
 });
+
+app.post('/editProfile', function() {
+
+});
+
+app.get('/editProfile', function(req, res){
+    res.render('editProfile',{
+        layout: "form"
+    })
+});
+
 app.post('/name', function(req, res) {
   var body = req.body;
   if(!body.firstname){
