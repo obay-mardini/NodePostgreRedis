@@ -6,15 +6,29 @@ var clientRE = redis.createClient({
     port: 6379
 });
 
+function checkUserAuth(emai, password, res){
+    var client = new pg.Client(str);
+    client.connect();
+    client.on('error', function(err){
+        console.log(err);
+    });
+    var query = 'select * from registration where email = $1 and hash = $2';
+    client.query(query, [email, hash], function(err, result){
+        if(!result.rows[0]){
+            res.render('logInForm', {
+                message: 'you email or password are not correct'
+            });
+        } else {
+            res.redirect('/rendered')
+        }
+    });
+}
 function signUp(firstName, lastName,password,email) {
     var client = new pg.Client(str);
     client.connect();
     client.on('error', function(err){
         console.log(err)
     });
-    client.on('end', function(res){
-        //console.log(res)
-    })
     var query = "INSERT INTO registration (firstname, lastname, password,email) VALUES ($1, $2, $3, $4) returning *;";
     return new Promise(function(resolve, reject){
         client.query(query,[firstName, lastName, email, password], function(err, results) {
@@ -178,3 +192,4 @@ exports.joinTables = joinTables;
 exports.sendQuery = sendQuery;
 exports.makeUserProfileTable = makeUserProfileTable;
 exports.signUp = signUp;
+exports.checkUserAuth = checkUserAuth;

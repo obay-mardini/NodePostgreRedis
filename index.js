@@ -28,7 +28,6 @@ app.use(session({
     saveUninitialized: true,
     secret: 'my super fun secret'
 }));
-
 app.engine('handlebars', hb());
 
 app.set('view engine', 'handlebars');
@@ -53,6 +52,7 @@ app.post('/filter', function(req, res) {
 });
 
 app.get('/rendered', function(req,res) {
+    //
       queryDB.joinTables().then(function(val) {
         color = val.map(function(record){
           return record.color;
@@ -83,6 +83,15 @@ app.get('/rendered', function(req,res) {
     });
 });
 
+app.get('/logIn', function(req, res){
+    res.render('logInForm');
+})
+
+app.post('/logInForm', function(req, res) {
+    var body = req.body;
+    queryDB.checkUserAuth(body.email, res);
+    queryDB.checkUserAuth(body.password, res);
+});
 app.post('/name', function(req, res) {
   var body = req.body;
   if(!body.firstname){
@@ -97,8 +106,7 @@ app.post('/name', function(req, res) {
         firstName: body.firstname,
         lastName: body.lastname,
         id: val
-      }
-
+    };
       res.redirect('/newForm.html');
     }).catch(function(err) {
       res.sendStatus(500);
@@ -109,26 +117,28 @@ app.post('/name', function(req, res) {
 });
 
 app.post('/registrationForm', function(req, res) {
-  console.log('here')
   var body = req.body;
   if(!body.firstname || !body.password || !body.lastname || !body.email){
     res.redirect('/name.html')
   }else {
-    queryDB.signUp(body.firstname,body.lastname, body.email, body.password);
-      req.session.user = {
-        firstName: body.firstname,
-        lastName: body.lastname,
-        password: body.password
-      }
+    crypt.hashPassword(body.password).then(function(hash){
+        return queryDB.signUp(body.firstname,body.lastname, body.email, hash);
+    }).then(function(id){
+        req.session.register = {
+          name: body.firstname + body.lastname,
+          email: body.email,
+          id: id
+        }
+       res.redirect('/newForm.html');
+   });
   }
 });
 
 app.post('/userProfile', function(req, res){
   var body = req.body;
-   queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.user.id).then(function(val) {
+   queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.register.id).then(function(val) {
     res.redirect('/rendered')
   });
-
 });
 
 // recieve a request
