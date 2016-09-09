@@ -1,8 +1,9 @@
 var bcrypt = require('bcrypt');
 
+
 function hashPassword(plainTextPassword) {
 
-    new Promise(function(resolve, reject){
+    return new Promise(function(resolve, reject){
         bcrypt.genSalt(function(err, salt) {
             if (err) {
                 return console.log(err);
@@ -13,7 +14,8 @@ function hashPassword(plainTextPassword) {
                     if (err) {
                         console.log(err)
                     }
-                    resolve(hash)
+                    console.log(hash)
+                    resolve(hash);
                     /*
                     checkPassword(checkWith, hash, function(err, doesMatch) {
                       console.log('number or rounds ' + bcrypt.getRounds(hash));
@@ -35,10 +37,10 @@ function checkPassword(textEnteredInLoginForm, hashedPasswordFromDatabase, callb
         if (err) {
             return callback(err);
         }
-        console.log(doesMatch);
         callback(null, doesMatch);
     });
 }
 
 
 exports.hashPassword = hashPassword;
+exports.checkPassword = checkPassword;

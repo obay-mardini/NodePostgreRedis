@@ -1,25 +1,40 @@
 var pg = require('pg');
 var str = 'postgres://test:' + require('./password.json').test + '@localhost:5432/users';
 var redis = require('redis')
+var crypt = require('./crypting.js');
 var clientRE = redis.createClient({
     host: 'localhost',
     port: 6379
 });
 
-function checkUserAuth(emai, password, res){
+function checkUserAuth(email, password, res){
     var client = new pg.Client(str);
     client.connect();
     client.on('error', function(err){
         console.log(err);
     });
-    var query = 'select * from registration where email = $1 and hash = $2';
-    client.query(query, [email, hash], function(err, result){
+    var query = 'select * from registration where email = $1';
+    console.log(email)
+    client.query(query, [email], function(err, result){
         if(!result.rows[0]){
+            console.log('rows not defined')
             res.render('logInForm', {
                 message: 'you email or password are not correct'
             });
         } else {
-            res.redirect('/rendered')
+            crypt.checkPassword(password,result.rows[0].password, function(err, doesMatch){
+                if(err){
+                    res.status(401)
+                }
+                if(doesMatch){
+                    res.redirect('/rendered');
+                } else {
+                    res.render('logInForm', {
+                        message: 'you email or password are not correct'
+                    });
+                }
+            });
+
         }
     });
 }
