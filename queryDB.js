@@ -7,31 +7,25 @@ var clientRE = redis.createClient({
     port: 6379
 });
 
-function checkUserAuth(email, password, res){
+function checkUserAuth(email, password, callback){
     var client = new pg.Client(str);
     client.connect();
     client.on('error', function(err){
         console.log(err);
     });
     var query = 'select * from registration where email = $1';
-    console.log(email)
     client.query(query, [email], function(err, result){
         if(!result.rows[0]){
-            console.log('rows not defined')
-            res.render('logInForm', {
-                message: 'you email or password are not correct'
-            });
+            callback('err')
         } else {
             crypt.checkPassword(password,result.rows[0].password, function(err, doesMatch){
                 if(err){
-                    res.status(401)
+                    callback('err')
                 }
                 if(doesMatch){
-                    res.redirect('/rendered');
+                    callback(null, result.rows[0].id);
                 } else {
-                    res.render('logInForm', {
-                        message: 'you email or password are not correct'
-                    });
+                    callback('err');
                 }
             });
 

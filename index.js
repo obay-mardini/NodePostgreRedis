@@ -89,8 +89,22 @@ app.get('/logIn', function(req, res){
 
 app.post('/logInForm', function(req, res) {
     var body = req.body;
-    queryDB.checkUserAuth(body.email, res);
-    queryDB.checkUserAuth(body.password, res);
+    //queryDB.checkUserAuth(body.email, res);
+    queryDB.checkUserAuth(body.email,body.password, function(err, data) {
+        if(err){
+            res.render('logInForm', {
+                message: 'you email or password are not correct'
+            });
+        }
+        if(data){
+            req.session.user = {
+              firstName: body.firstname,
+              lastName: body.lastname,
+              id: data
+            };
+            res.redirect('/rendered');
+        }
+    });
 });
 app.post('/name', function(req, res) {
   var body = req.body;
