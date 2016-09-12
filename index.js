@@ -89,7 +89,7 @@ app.get('/rendered', function(req,res) {
 
 app.get('/logIn', function(req, res){
     res.render('logInForm');
-})
+});
 
 app.post('/logInForm', function(req, res) {
     var body = req.body;
@@ -102,8 +102,6 @@ app.post('/logInForm', function(req, res) {
         }
         if(data){
             req.session.user = {
-              firstName: body.firstname,
-              lastName: body.lastname,
               id: data
             };
             res.redirect('/rendered');
@@ -111,14 +109,41 @@ app.post('/logInForm', function(req, res) {
     });
 });
 
-app.post('/editProfile', function() {
+app.post('/editProfile', function(req, res) {
+    var columns = ['firstname', 'lastname' ,'email','password', 'age','city','url','color'];
+    var registerationObj = {};
+    var profileObj = {};
 
+    columns.forEach(function(item,index,array) {
+        if(index < 4 && req.body[item]) {
+            registerationObj[item] = req.body[item];
+        } else if(index >= 4 && req.body[item]){
+            profileObj[item] = req.body[item];
+        }
+    });
+    console.log()
+    queryDB.updateRecord(registerationObj,req.session,'registration',function(err,data){
+        console.log(data)
+        if(err){
+            res.status(404);
+        } else {
+            queryDB.updateRecord(profileObj,req.session, 'user_profiles',function(err,data){
+                if(err){
+                    res.status(404);
+                } else {
+                    res.redirect('/rendered')
+                }
+            });
+        }
+    });
 });
 
 app.get('/editProfile', function(req, res){
     res.render('editProfile',{
-        layout: "form"
-    })
+        layout: "form",
+        name: 'obay'
+    });
+
 });
 
 app.post('/name', function(req, res) {
@@ -153,7 +178,7 @@ app.post('/registrationForm', function(req, res) {
     crypt.hashPassword(body.password).then(function(hash){
         return queryDB.signUp(body.firstname,body.lastname, body.email, hash);
     }).then(function(id){
-        req.session.register = {
+        req.session.user = {
           name: body.firstname + body.lastname,
           email: body.email,
           id: id
@@ -165,7 +190,7 @@ app.post('/registrationForm', function(req, res) {
 
 app.post('/userProfile', function(req, res){
   var body = req.body;
-   queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.register.id).then(function(val) {
+   queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.user.id).then(function(val) {
     res.redirect('/rendered')
   });
 });
@@ -177,8 +202,8 @@ app.get('/helloWorld', function(req, res){
 
 app.get('/logout', function(req, res){
   req.session.destroy(function(err){
-    res.redirect('/rendered');
   });
+    res.redirect('/rendered');
 });
 
 app.get('/', function(req,res) {

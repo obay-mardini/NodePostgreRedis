@@ -7,6 +7,38 @@ var clientRE = redis.createClient({
     port: 6379
 });
 
+function updateRecord(body,session,tableName, callback){
+    console.log(body)
+    var arr = [session.user.id];
+    var count = 1;
+    var client = new pg.Client(str);
+    client.connect();
+    client.on('error', function(err){
+        console.log(err);
+    });
+    query = 'update ' + tableName;
+    for (var key in body) {
+        count ++;
+        arr.push(body[key]);
+        if(count === 2){
+            query += " SET " + key + '= $' + count;
+        } else {
+            query += ', ' + key + '= $' + count;
+        }
+    }
+    tableName === 'registration' ? query += ' where id = $1': query += ' where idreg = $1';
+    console.log(query);
+    console.log(arr);
+    client.query(query, arr, function(err, result){
+        console.log(result)
+        if(err){
+            callback(err);
+        } else {
+            callback(null,result);
+        }
+    });
+}
+
 function checkUserAuth(email, password, callback){
     var client = new pg.Client(str);
     client.connect();
@@ -202,3 +234,4 @@ exports.sendQuery = sendQuery;
 exports.makeUserProfileTable = makeUserProfileTable;
 exports.signUp = signUp;
 exports.checkUserAuth = checkUserAuth;
+exports.updateRecord = updateRecord;
