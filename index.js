@@ -121,21 +121,28 @@ app.post('/editProfile', function(req, res) {
             profileObj[item] = req.body[item];
         }
     });
-    console.log()
-    queryDB.updateRecord(registerationObj,req.session,'registration',function(err,data){
-        console.log(data)
-        if(err){
-            res.status(404);
-        } else {
-            queryDB.updateRecord(profileObj,req.session, 'user_profiles',function(err,data){
-                if(err){
-                    res.status(404);
-                } else {
-                    res.redirect('/rendered')
-                }
-            });
-        }
-    });
+
+    if(Object.keys(registerationObj).length !== 0){
+        queryDB.updateRecord(registerationObj, req.session, 'registration', function(err,data){
+            if(err){
+                res.status(404);
+            }
+            if(data){
+                console.log('changes to profileTabel are DONE')
+            }
+        });
+    }
+    if(Object.keys(profileObj).length !== 0) {
+        queryDB.updateRecord(profileObj,req.session, 'user_profiles', function(err,data){
+            if(err){
+                res.status(404);
+            }
+            if(data){
+                console.log('changes to profileTabel are DONE')
+            }
+        });
+        res.redirect('/rendered');
+    }
 });
 
 app.get('/editProfile', function(req, res){
