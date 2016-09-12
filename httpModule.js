@@ -29,9 +29,7 @@ function getTokens() {
       }
     });
     return tweets;
-  }).catch(function(err){
-      reject(err);
-    });
+  });
 }
 
 function search(key) {

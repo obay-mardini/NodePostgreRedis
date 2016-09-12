@@ -77,18 +77,24 @@ app.get('/rendered', function(req,res) {
         });
 
         res.render('hello', {
-          data: val,
-          city: city,
-          color: city,
-          age: age
-        },function(err, results){
-          res.send(results)
-        });
+            layout: 'main',
+
+              data: val,
+              city: city,
+              color: city,
+              age: age
+            ,function(err, results){
+              res.send(results)
+            }
+        }
+        );
     });
 });
 
 app.get('/logIn', function(req, res){
-    res.render('logInForm');
+    res.render('logInForm', {
+        layout: 'main'
+    });
 });
 
 app.post('/logInForm', function(req, res) {
@@ -214,8 +220,10 @@ app.get('/logout', function(req, res){
 });
 
 app.get('/', function(req,res) {
-  res.write('hello world');
-  res.end();
+    res.render('mainPage',{
+      layout: 'main',
+      details: {name: req.params.project, description: req.params.project + ' is super fun', link: '/' + req.params.project}
+    });
 });
 
 app.post('/user', function(req, res){

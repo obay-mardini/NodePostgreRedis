@@ -1,26 +1,4 @@
-<!doctype html>
-<html>
-
-<head>
-    <style>
-        table {
-            font-family: arial, sans-serif;
-            border-collapse: collapse;
-            width: 100%;
-        }
-        td,
-        th {
-            border: 1px solid #dddddd;
-            text-align: left;
-            padding: 8px;
-        }
-        tr:nth-child(even) {
-            background-color: #dddddd;
-        }
-    </style>
-</head>
-
-<body>
+<div id="container">
     <form action="/filter" method="post">
         City:
         <select name="city">
@@ -45,6 +23,7 @@
         </select>
         <input type="submit"></input>
     </form>
+
     <table>
         <tr>
             <th>name</th>
@@ -63,6 +42,4 @@
         </tr>
         {{/data}}
     </table>
-</body>
-
-</html>
+</div>

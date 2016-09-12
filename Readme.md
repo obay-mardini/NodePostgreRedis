@@ -23,7 +23,7 @@
   * Modify your Twitter API project so that you get the tweets from cache if possible. If they are not in the cache, you should request them from Twitter and cache them for 10 minutes after you get them.
   * Use sessions to change the route that users POST their names to so that it no longer writes the names and ids to a cookie but     instead adds a user property to req.session. Also change the test that redirects users who have not entered their names to the page with the form. This test should now look for req.session.user.
 
-  * Add a /logout route that calls req.session.destroy and redirects users to the form for entering their names.
+  * Add a logout route that calls req.session.destroy and redirects users to the form for entering their names.
   * Make a registration form and store the users's names and hash passwords in the database.
 
 <img src='ticker.gif'>
