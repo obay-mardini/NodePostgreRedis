@@ -183,11 +183,12 @@ function joinTables(){
     });
 
     return new Promise(function(resolve, reject) {
-        var query = "select * from user_names JOIN user_profiles ON user_names.id=user_profiles.id;";
+        var query = "select firstname, age, city, url, color from registration JOIN user_profiles ON registration.id = user_profiles.idreg;";
         clientRE.get('joinedTables', function(err, data) {
             if (err) {
                 return console.log(err);
             }
+            
             if(data) {
                 console.log('get')
                 resolve(JSON.parse(data));

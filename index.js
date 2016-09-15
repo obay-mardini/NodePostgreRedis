@@ -78,7 +78,6 @@ app.get('/rendered', function(req,res) {
 
         res.render('hello', {
             layout: 'main',
-
               data: val,
               city: city,
               color: city,
@@ -92,9 +91,19 @@ app.get('/rendered', function(req,res) {
 });
 
 app.get('/logIn', function(req, res){
-    res.render('logInForm', {
-        layout: 'main'
-    });
+    //console.log(req.session.user)
+    if(req.session.user) {
+        res.render('hello', {
+            layout: 'main',
+            message: ''
+        });
+    } else {
+        res.render('logInForm', {
+            layout: 'main',
+            message: ''
+        });
+    }
+
 });
 
 app.post('/logInForm', function(req, res) {
@@ -153,8 +162,7 @@ app.post('/editProfile', function(req, res) {
 
 app.get('/editProfile', function(req, res){
     res.render('editProfile',{
-        layout: "form",
-        name: 'obay'
+        layout: "main"
     });
 
 });
@@ -162,7 +170,7 @@ app.get('/editProfile', function(req, res){
 app.post('/name', function(req, res) {
   var body = req.body;
   if(!body.firstname){
-    res.redirect('/name.html')
+    res.redirect('/signUp')
   }else {
     /*
     res.cookie('name', body.firstname);
@@ -183,10 +191,15 @@ app.post('/name', function(req, res) {
   }
 });
 
+app.get('/signUp', function(req, res){
+    res.render('signUp', {
+        layout: 'main'
+    })
+})
 app.post('/registrationForm', function(req, res) {
   var body = req.body;
   if(!body.firstname || !body.password || !body.lastname || !body.email){
-    res.redirect('/name.html')
+    res.redirect('/signUp')
   }else {
     crypt.hashPassword(body.password).then(function(hash){
         return queryDB.signUp(body.firstname,body.lastname, body.email, hash);
@@ -264,7 +277,7 @@ app.get('/twitter', function(req, res){
 
 app.use(function(req, res) {
   if(!req.body.firstname) {
-    res.redirect('/name.html');
+    res.redirect('/signUp');
   }
 });
 
