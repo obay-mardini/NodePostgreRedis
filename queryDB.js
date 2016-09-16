@@ -48,7 +48,7 @@ function checkUserAuth(email, password, callback){
     var query = 'select * from registration where email = $1';
     client.query(query, [email], function(err, result){
         if(!result.rows[0]){
-            callback('err')
+            callback('err');
         } else {
             crypt.checkPassword(password,result.rows[0].password, function(err, doesMatch){
                 if(err){
@@ -94,7 +94,7 @@ function filterTable(city, color, age) {
         //console.log(res)
     });
 
-    var query = "select * from user_names JOIN user_profiles ON user_names.id=user_profiles.id";
+    var query = "select * from registration JOIN user_profiles ON registration.id = user_profiles.idreg";
     var arr = [];
     var count = 1;
     if(city || color || age){
@@ -132,7 +132,7 @@ function filterTable(city, color, age) {
 }
 
 function makeUserProfileTable(age,city,url,color,id){
-    console.log(id)
+    clientRE.del('joinedTables')
     var client = new pg.Client(str);
     client.connect();
     client.on('error', function(err){
@@ -188,7 +188,7 @@ function joinTables(){
             if (err) {
                 return console.log(err);
             }
-            
+
             if(data) {
                 console.log('get')
                 resolve(JSON.parse(data));

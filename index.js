@@ -21,13 +21,13 @@ app.set('view engine', 'handlebars');
 var session = require('express-session');
 var Store = require('connect-redis')(session);
 var crypt = require('./crypting.js');
-
+var store = new Store({
+    ttl: 60,
+    host: 'localhost',
+    port: 6379
+})
 app.use(session({
-    store: new Store({
-        ttl: 3600,
-        host: 'localhost',
-        port: 6379
-    }),
+    store: store,
     resave: false,
     saveUninitialized: true,
     secret: 'my super fun secret'
@@ -47,6 +47,9 @@ app.use(staticProjects);
 app.post('/filter', function(req, res) {
   queryDB.filterTable(req.body.city, req.body.color, req.body.age).then(function(val){
     res.render('hello', {
+      layout: 'main',
+      status: '/logOut',
+      button: 'log out',
       data: val,
       city: city,
       age: age,
@@ -55,55 +58,62 @@ app.post('/filter', function(req, res) {
   });
 });
 
-app.get('/rendered', function(req,res) {
-    //
-      queryDB.joinTables().then(function(val) {
-        color = val.map(function(record){
-          return record.color;
-        }).filter(function(item, index, array){
-          return array.indexOf(item) === index;
-        });
+app.get('/showTable', function(req,res) {
+    try {
+        queryDB.checkUserAuth(req.session.user.email, req.session.user.password, function(err, data) {
+            if(err){
+                res.redirect('/register');
+            } else {
+                queryDB.joinTables().then(function(val) {
+                  color = val.map(function(record){
+                    return record.color;
+                  }).filter(function(item, index, array){
+                    return array.indexOf(item) === index;
+                  });
 
-        city = val.map(function(record){
-          return record.city
-        }).filter(function(item, index, array){
-          return array.indexOf(item) === index;
-        });
+                  city = val.map(function(record){
+                    return record.city
+                  }).filter(function(item, index, array){
+                    return array.indexOf(item) === index;
+                  });
 
-        age = val.map(function(record){
-          return record.age;
-        }).filter(function(item, index, array){
-          return array.indexOf(item) === index;
-        });
+                  age = val.map(function(record){
+                    return record.age;
+                  }).filter(function(item, index, array){
+                    return array.indexOf(item) === index;
+                  });
 
-        res.render('hello', {
-            layout: 'main',
-              data: val,
-              city: city,
-              color: city,
-              age: age
-            ,function(err, results){
-              res.send(results)
+                  res.render('hello', {
+                      layout: 'main',
+                      button: 'log out',
+                      status: '/louOut',
+                        data: val,
+                        city: city,
+                        color: color,
+                        age: age
+                      ,function(err, results){
+                        res.send(results)
+                      }
+                  }
+                  );
+              });
+
             }
-        }
-        );
-    });
-});
 
-app.get('/logIn', function(req, res){
-    //console.log(req.session.user)
-    if(req.session.user) {
-        res.render('hello', {
-            layout: 'main',
-            message: ''
-        });
-    } else {
-        res.render('logInForm', {
-            layout: 'main',
-            message: ''
-        });
+        })
+    } catch(err) {
+        res.redirect('/register')
     }
 
+  });
+
+app.get('/logIn', function(req, res){
+        res.render('logInForm', {
+            layout: 'main',
+            button: 'log in',
+            status: '/logIn',
+            message: ''
+        });
 });
 
 app.post('/logInForm', function(req, res) {
@@ -117,9 +127,11 @@ app.post('/logInForm', function(req, res) {
         }
         if(data){
             req.session.user = {
+              email: body.email,
+              password: body.password,
               id: data
             };
-            res.redirect('/rendered');
+            res.redirect('/showTable');
         }
     });
 });
@@ -156,13 +168,15 @@ app.post('/editProfile', function(req, res) {
                 console.log('changes to profileTabel are DONE')
             }
         });
-        res.redirect('/rendered');
+        res.redirect('/showTable');
     }
 });
 
 app.get('/editProfile', function(req, res){
     res.render('editProfile',{
-        layout: "main"
+        layout: "main",
+        status: '/logOut',
+        button: 'log in'
     });
 
 });
@@ -193,20 +207,23 @@ app.post('/name', function(req, res) {
 
 app.get('/signUp', function(req, res){
     res.render('signUp', {
-        layout: 'main'
+        layout: 'main',
+        status: '/logIn',
+        button: 'log in'
     })
 })
 app.post('/registrationForm', function(req, res) {
   var body = req.body;
   if(!body.firstname || !body.password || !body.lastname || !body.email){
-    res.redirect('/signUp')
+    res.redirect('/signUp');
   }else {
     crypt.hashPassword(body.password).then(function(hash){
         return queryDB.signUp(body.firstname,body.lastname, body.email, hash);
     }).then(function(id){
         req.session.user = {
-          name: body.firstname + body.lastname,
+          name: body.name,
           email: body.email,
+          password: body.password,
           id: id
         }
        res.redirect('/newForm.html');
@@ -217,7 +234,7 @@ app.post('/registrationForm', function(req, res) {
 app.post('/userProfile', function(req, res){
   var body = req.body;
    queryDB.makeUserProfileTable(body.age, body.city, body.url, body.color, req.session.user.id).then(function(val) {
-    res.redirect('/rendered')
+    res.redirect('/showTable')
   });
 });
 
@@ -228,13 +245,18 @@ app.get('/helloWorld', function(req, res){
 
 app.get('/logout', function(req, res){
   req.session.destroy(function(err){
+      res.clearCookie('connect.sid');
+      res.redirect('/showTable');
+      console.log(req.session)
   });
-    res.redirect('/rendered');
+
 });
 
 app.get('/', function(req,res) {
-    res.render('mainPage',{
+    res.render('mainPage', {
       layout: 'main',
+      button: 'log in',
+      status: '/logIn',
       details: {name: req.params.project, description: req.params.project + ' is super fun', link: '/' + req.params.project}
     });
 });
